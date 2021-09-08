@@ -16,11 +16,11 @@ class VerifyEmailController extends Controller
     public function store(EmailVerificationRequest $request) {
         $request->fulfill();
 
-        return redirect('/home');
+        return redirect('/chat');
     }
     public function resend(Request $request) 
     {
-         $request->user()->sendEmailVerificationNotification();
-          return back()->with('message', 'Verification link sent!');
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('message', 'Verification link sent!');
     }
 }

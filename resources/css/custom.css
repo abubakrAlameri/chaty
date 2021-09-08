@@ -70,3 +70,13 @@
     }
 }
 
+
+#spinner{
+    border-top-color:  rgb(99, 102, 241);
+    animation: spinner 0.5s ease-out infinite;
+}
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}

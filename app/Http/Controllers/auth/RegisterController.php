@@ -28,10 +28,11 @@ class RegisterController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'is_active' => 1,
         ]);
         Auth::login($newuser);
         event(new Registered($newuser));
-        return redirect('/home');
+        return redirect('/chat');
     }
 
 }

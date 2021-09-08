@@ -75,3 +75,20 @@
         stroke-dashoffset: -200;
     }
 }
+
+
+#spinner{
+    border-top-color:  rgb(99, 102, 241);
+    -webkit-animation: spinner 0.5s ease-out infinite;
+            animation: spinner 0.5s ease-out infinite;
+}
+@-webkit-keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}

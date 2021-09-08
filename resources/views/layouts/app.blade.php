@@ -8,12 +8,18 @@
     <link href="{{mix('css/app.css') }}" rel="stylesheet">
     <link href="{{mix('css/custom.css') }}" rel="stylesheet">
     <title>@yield('title')</title>
+    @auth
+        <script>
+             window.auth_id = "{{auth()->user()->id}}";
+             window.auth_name = "{{auth()->user()->name}}";
+        </script>   
+    @endauth
 </head>
 <body>
     @yield('content')
 
         <script src="{{ mix('js/app.js')}}"></script>
-        <script src="{{ mix('js/view.js')}}"></script>
+        <script src="{{ asset('js/view.js')}}"></script>
 
 </body>
 </html>

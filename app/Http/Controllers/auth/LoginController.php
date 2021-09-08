@@ -19,9 +19,10 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-
-        if(Auth::attempt($credentials, $request->remember_me)){
-            return redirect('/home');
+        $remember_me =$request->remember_me == "on"? true : false;
+       
+        if(Auth::attempt($credentials, $remember_me)){
+            return redirect('/chat');
         }
 
         return back()->with([
