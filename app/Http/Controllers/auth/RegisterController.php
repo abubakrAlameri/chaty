@@ -32,7 +32,7 @@ class RegisterController extends Controller
         ]);
         Auth::login($newuser);
         event(new Registered($newuser));
-        return redirect('/chat');
+        return redirect()->route('home');
     }
 
 }

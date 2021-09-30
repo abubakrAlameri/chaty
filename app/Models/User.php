@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\chat;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'is_active',
+        'last_seen',
     ];
 
     /**
@@ -45,7 +47,11 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'last_seen',
+    ];
     public function participant(){
         return $this->hasMany(Participant::class);
     }

@@ -10,39 +10,33 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageEvent implements ShouldBroadcast
+class ReadMessageEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    public $user; 
-    public $currentConversation; 
-    public $message; 
-    public $is_read; 
+    public $user,$currentConversation;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($user , $currentConversation, $message , $is_read)
+    public function __construct($user, $currentConversation)
     {
-     
-        $this->currentConversation = $currentConversation;
-        $this->message = $message;
         $this->user = $user;
-        $this->is_read = $is_read;
+        $this->currentConversation = $currentConversation;
     }
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\Channel|
+     * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('chat.'.$this->currentConversation);
+        return new PrivateChannel('message-read.'. $this->currentConversation);
     }
 
     public function broadcastAs()
     {
-        return 'messages';
+        return 'read-message';
     }
 }

@@ -16,7 +16,7 @@ class VerifyEmailController extends Controller
     public function store(EmailVerificationRequest $request) {
         $request->fulfill();
 
-        return redirect('/chat');
+        return redirect()->route('home');
     }
     public function resend(Request $request) 
     {

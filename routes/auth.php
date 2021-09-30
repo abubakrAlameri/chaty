@@ -5,7 +5,7 @@ use App\Http\Controllers\auth\LoginController;
 use App\Http\Controllers\auth\RegisterController;
 use App\Http\Controllers\auth\VerifyEmailController;
 
-Route::get('/', [LoginController::class , 'create'])->name('login');
+Route::get('/login', [LoginController::class , 'create'])->name('login');
 Route::post('/login', [LoginController::class , 'store'])->name('signin');
 Route::post('/logout', [LoginController::class , 'destroy'])->name('logout');
 

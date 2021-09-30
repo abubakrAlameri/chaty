@@ -14,14 +14,18 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-// Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-//     return (int) $user->id === (int) $id;
-// });
-//ArgumentCountError: Too few arguments to function App\Providers\BroadcastServiceProvider::{closure}(), 1 passed in C:\xampp\htdocs\chaty\vendor\laravel\framework\src\Illuminate\Broadcasting\Broadcasters\Broadcaster.php on line 84 and exactly 2 expected in file C:\xampp\htdocs\chaty\routes\channels.php on line 21
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
 
 
 
 Broadcast::channel("chat.{currentConversation}", function ($user, $currentConversation){
     //  Auth::check();
+    return true;
+});
+
+Broadcast::channel("message-read.{currentConversation}", function ($user, $currentConversation){
+    
     return true;
 });

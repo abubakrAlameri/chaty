@@ -9,10 +9,11 @@ class TextMessage extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'msg_id',
         'text',
     ];
-     public function message()
+    public function message()
     {
-        return $this->belongsTo(Message::class , 'msg_id');
+        return $this->belongsTo(Message::class , 'msg_id' , 'msg_id');
     }
 }

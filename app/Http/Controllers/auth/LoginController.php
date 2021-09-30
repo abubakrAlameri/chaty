@@ -5,6 +5,7 @@ namespace App\Http\Controllers\auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class LoginController extends Controller
 {
@@ -19,10 +20,10 @@ class LoginController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-        $remember_me =$request->remember_me == "on"? true : false;
-       
-        if(Auth::attempt($credentials, $remember_me)){
-            return redirect('/chat');
+
+        if(Auth::attempt($credentials, $request->boolean('remember_me'))){
+        
+            return redirect()->route('home');
         }
 
         return back()->with([
@@ -32,13 +33,14 @@ class LoginController extends Controller
 
     public function destroy(Request $request)
     {   
-         Auth::logout();
+        Cache::forget('is_active-' . Auth::user()->id);
+        Auth::logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
         
     }
 }

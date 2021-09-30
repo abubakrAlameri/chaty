@@ -1842,19 +1842,42 @@ module.exports = {
 
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
+var is_read;
 var form = document.getElementById('input-form');
 var currentConversation = document.getElementById('currentConversation');
 var chat = document.getElementById('chat');
-scrolToButtom();
+var notification = document.getElementById('notification');
+scrolToButtom(); //events listeners
+
+var addConv = document.getElementById('add-conv');
+addConv.addEventListener('submit', function (e) {
+  e.preventDefault();
+  var email = e.target.elements['email'].value;
+  var url = e.target.getAttribute('action');
+  var data = new FormData();
+  data.append('email', email);
+  e.target.elements['add-btn'].innerHTML = spinner("left: 1rem ; bottom: 0");
+  axios({
+    method: 'POST',
+    url: url,
+    data: data
+  }).then(function (response) {
+    e.target.elements['add-btn'].innerHTML = 'add';
+    addConv.lastElementChild.classList.add(response.data.color);
+    addConv.lastElementChild.textContent = response.data.message;
+
+    if (response.data.message == 'added successfully') {}
+  });
+});
 form.addEventListener('submit', function (e) {
   e.preventDefault();
   var message = e.target.elements['message'];
 
   if (message.value == '') {
-    console.log('false');
     return;
   }
 
+  addMessageToScrean(message.value, 'sent', window.auth_name);
   var options = {
     method: 'POST',
     url: '/send',
@@ -1863,33 +1886,76 @@ form.addEventListener('submit', function (e) {
       'message': message.value
     }
   };
-  addMessageToScrean(message.value, 'sent', window.auth_name);
   message.value = '';
   message.style.height = '2.5rem';
   axios(options).then(function (response) {
     if (response.status == 200) {
-      chat.lastElementChild.querySelector('.status').innerHTML = "<div>seen</div>";
+      var status;
+
+      if (is_read) {
+        status = doubleCheck();
+      } else {
+        status = check();
+      }
+
+      chat.lastElementChild.querySelector('.status').innerHTML = status;
     }
   })["catch"](function (error) {
     console.log(error);
   });
 });
-var x = window.Echo["private"]("chat.".concat(currentConversation.value)).listen('.messages', function (e) {
-  console.log(e);
+notification.querySelector('#notifi-close').addEventListener('click', function (e) {
+  notification.classList.remove('dispaly');
+});
+notification.addEventListener('click', function (e) {
+  console.log(notification.classList.contains('dispaly'));
+  if (notification.classList.contains('dispaly')) notification.submit();
+}); // real time listeners
 
-  if (e.user.id != window.auth_id) {
-    addMessageToScrean(e.message, 'received', e.user.name);
+window.Echo["private"]("chat.".concat(currentConversation.value)).listen('.messages', function (msg) {
+  console.log(msg);
+  is_read = msg.is_read;
+
+  if (msg.user.id != window.auth_id) {
+    addMessageToScrean(msg.message, 'received', msg.user.name);
   }
-}); // TODO: fix authentcation issues
-// TODO: fix scrolling issues
-// TODO: send voice imgae files 
-// TODO: make notification 
+});
+window.Echo["private"]("message-read.".concat(currentConversation.value)).listen('.read-message', function (read) {
+  if (read.currentConversation == currentConversation.value) {
+    var unreadMessages = chat.querySelectorAll('.status > .unread');
+    unreadMessages.forEach(function (message) {
+      message.parentNode.innerHTML = "<div class='read'><svg viewBox=\"0 0 30 30\" width=\"20\" fill=\"#4338CA\"  height=\"20\" xmlns=\"http://www.w3.org/2000/svg\" fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M24 6.278l-11.16 12.722-6.84-6 1.319-1.49 5.341 4.686 9.865-11.196 1.475 1.278zm-22.681 5.232l6.835 6.01-1.314 1.48-6.84-6 1.319-1.49zm9.278.218l5.921-6.728 1.482 1.285-5.921 6.756-1.482-1.313z\"/></svg></div>";
+    });
+  }
+});
+window.Echo["private"]("App.Models.User.".concat(window.auth_id)).notification(function (notifi) {
+  var user = JSON.parse(notifi.user);
+  notification.querySelector("input[name='conv_id']").value = notifi.conversation;
+  notification.querySelector("input[name='name']").value = user.name;
+  notification.querySelector("#name").textContent = user.name;
+  notification.querySelector("#message").textContent = notifi.message;
+  var sound = new Audio('/audio/notification.mp3');
+  sound.play();
+  notification.classList.add('dispaly');
+  increasUnreadMessages(notifi.conversation);
+  setTimeout(function () {
+    notification.classList.remove('dispaly');
+  }, 5000);
+}); //functions
+
+function increasUnreadMessages(conversation) {
+  var conv = document.getElementById("conv-".concat(conversation));
+  var counter = conv.querySelector('#unread-count');
+  counter.classList.remove('hidden');
+  console.log(counter.textContent.trim() + 1);
+  counter.textContent = 1 + +counter.textContent.trim();
+}
 
 function addMessageToScrean(message, type, name) {
   var empty = chat.querySelector('#empty');
 
   if (type == 'sent') {
-    var element = "\n                        <div class=\"sent col-start-2 col-end-13 p-2 rounded-lg\">\n                            <div class=\"flex items-center justify-start flex-row-reverse\">\n                                <div\n                                    class=\"flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0\">\n                                        ".concat(name[0].toUpperCase(), "\n                                </div>\n                                <div class=\"relative mr-3 break-normal text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl\">\n                                    <div>\n                                        ").concat(message, "\n                                    </div>\n                                \n                                \n                                    <div class=\"status absolute text-xs bottom-0 right-0 -mb-5 mr-2 text-gray-500\">\n                                        <div id=\"spinner\" class='spinner border-2   rounded-full w-4 h-4'></div>\n                                    </div>\n                            \n\n                                </div>\n                            </div>\n                        </div>\n            ");
+    var element = sentMessage(name[0].toUpperCase(), message);
 
     if (empty) {
       chat.innerHTML = element;
@@ -1898,7 +1964,7 @@ function addMessageToScrean(message, type, name) {
 
     chat.insertAdjacentHTML('beforeend', element);
   } else if (type == 'received') {
-    var _element = "\n                        <div class=\"receved col-start-1 col-end-12 md:col-end-8 p-2 rounded-lg\">\n                            <div class=\"flex flex-row items-center\">\n                                <div\n                                    class=\"flex items-center justify-center break-normal h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0\">\n                                    ".concat(name[0].toUpperCase(), "\n                                </div>\n                                <div class=\"relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl\">\n                                    <div>\n                                            ").concat(message, "\n                                    </div>\n                                </div>\n                            </div>\n                        </div>\n                    ");
+    var _element = receivedMessage(name[0].toUpperCase(), message);
 
     if (empty) {
       chat.innerHTML = _element;
@@ -1912,17 +1978,41 @@ function addMessageToScrean(message, type, name) {
 }
 
 function scrolToButtom() {
-  var contianer = document.getElementById('contianer');
-  contianer.scrollTo({
-    top: contianer.scrollHeight,
-    behavior: 'smooth'
-  });
+  if (form) {
+    var contianer = document.getElementById('contianer');
+    form.querySelector('#inputText').focus();
+    contianer.scrollTo({
+      top: contianer.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
 }
 
 function submitForm(e) {
   if (e.which == 13) {
     document.querySelector('#input-form').submit();
   }
+}
+
+function spinner() {
+  var style = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  return "<div id=\"spinner\" style=\"".concat(style, "\" class='spinner border-2 rounded-full w-3 h-3'></div>");
+}
+
+function doubleCheck() {
+  return "<div class='read'><svg viewBox=\"0 0 30 30\" width=\"20\" fill=\"#4338CA\"  height=\"20\" xmlns=\"http://www.w3.org/2000/svg\" fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M24 6.278l-11.16 12.722-6.84-6 1.319-1.49 5.341 4.686 9.865-11.196 1.475 1.278zm-22.681 5.232l6.835 6.01-1.314 1.48-6.84-6 1.319-1.49zm9.278.218l5.921-6.728 1.482 1.285-5.921 6.756-1.482-1.313z\"/></svg></div>";
+}
+
+function check() {
+  return "<div class='unread'><svg viewBox=\"0 0 30 30\" width=\"20\" fill=\"#4338CA\"  height=\"20\" xmlns=\"http://www.w3.org/2000/svg\" fill-rule=\"evenodd\" clip-rule=\"evenodd\"><path d=\"M21 6.285l-11.16 12.733-6.84-6.018 1.319-1.49 5.341 4.686 9.865-11.196 1.475 1.285z\"/></svg></div>";
+}
+
+function sentMessage(name, message) {
+  return "<div class=\"sent col-start-2 col-end-13 p-2 rounded-lg\">\n                <div class=\"flex items-center justify-start flex-row-reverse\">\n                    <div\n                        class=\"flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0\">\n                            ".concat(name, "\n                    </div>\n                    <div class=\"relative mr-3 break-all text-sm bg-indigo-100 py-4 px-4 shadow rounded-xl\">\n                        <div>\n                            ").concat(message, "\n                        </div>\n                    \n                    \n                        <div class=\"status absolute text-xs bottom-0 right-0 -mb-1 mr-2 text-gray-500\">\n                            ").concat(spinner(), "\n                        </div>\n                \n\n                    </div>\n                </div>\n            </div>");
+}
+
+function receivedMessage(name, message) {
+  return " <div class=\"receved col-start-1 col-end-12 md:col-end-8 p-2 rounded-lg\">\n                <div class=\"flex flex-row items-center\">\n                    <div\n                        class=\"flex items-center justify-center break-normal h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0\">\n                        ".concat(name, "\n                    </div>\n                    <div class=\"relative ml-3 break-all text-sm bg-white py-4 px-4 shadow rounded-xl\">\n                        <div>\n                                ").concat(message, "\n                        </div>\n                    </div>\n                </div>\n            </div>\n        ");
 }
 
 /***/ }),

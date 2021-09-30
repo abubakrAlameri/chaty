@@ -1,10 +1,11 @@
-function scroll() {
-    console.log('sc');
-    window.scrollTo(0, this.scrollHeight);
+function scrolToButtom(){
+    let contianer = document.getElementById('contianer');
+    contianer.scrollTo({ top: contianer.scrollHeight, behavior: 'smooth' });
 }
 function auto_grow(element) {
     element.style.height = "5px";
     element.style.height = (element.scrollHeight) + "px";
+    scrolToButtom()
 }
 
 
@@ -43,7 +44,7 @@ function sendImg(input) {
 }
 let mediaRecorder;
 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    console.log('getUserMedia supported.');
+    // console.log('getUserMedia supported.');
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then((stream) => {
             mediaRecorder = new MediaRecorder(stream);
