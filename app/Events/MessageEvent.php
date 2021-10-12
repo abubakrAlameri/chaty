@@ -17,18 +17,22 @@ class MessageEvent implements ShouldBroadcast
     public $currentConversation; 
     public $message; 
     public $is_read; 
+    public $msgType; 
+    public $size; 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($user , $currentConversation, $message , $is_read)
+    public function __construct($user , $currentConversation, $message , $is_read, $msgType , $size)
     {
      
         $this->currentConversation = $currentConversation;
         $this->message = $message;
         $this->user = $user;
         $this->is_read = $is_read;
+        $this->msgType = $msgType;
+        $this->size = $size;
     }
 
     /**

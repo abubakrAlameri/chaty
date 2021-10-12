@@ -15,48 +15,12 @@ use Illuminate\Support\Facades\Cache;
 class HomeController extends Controller
 {
     public function create(Request $request){
-        
+        // dd('l');
         
         Cache::put('user-chat-' . Auth::user()->id, $request->conv_id);
         $messages = null;
         if($request->conv_id){
-            $messages = User::select(
-                'participants.part_id',
-                'participants.conv_id',
-                'participants.user_id',
-                'users.email',
-                'users.name',
-                'messages.msg_id',
-             
-                'messages.is_read',
-                'text_messages.text',
-                'text_messages.created_at',
-            )
-            ->join('participants', 'participants.user_id', '=' , 'users.id')
-            ->join('messages','messages.part_id', '=', 'participants.part_id')
-            ->join('text_messages','text_messages.msg_id' , '=' , 'messages.msg_id')
-            ->where('participants.conv_id', $request->conv_id)
-            ->orderBy('created_at')
-            ->get();
-            for($i = $messages->count() - 1; $i >= 0; $i--){
-                if($messages[$i]->is_read == 1){
-                    break;
-                }
-
-                if($messages[$i]->email != Auth::user()->email)
-                {
-                    $messages[$i]->is_read = 1;
-                    Message::where('msg_id', $messages[$i]->msg_id)
-                        ->update(['is_read'=> 1]);
-                }
-            }
-          
-        
-           
-            event( New ReadMessageEvent(Auth::user(),$request->conv_id));
-            
-     
-            session(['currentConversations' => $request->conv_id]);
+            $messages = $this->getMessages($request->conv_id);
         } 
 
         $participants = Auth::user()->participant()
@@ -87,7 +51,6 @@ class HomeController extends Controller
         ->whereIn('conv_id', $participants)
         ->groupBy('conv_id')
         ->get();
-        // dd($conversations);
 
         return view('chat.home' , [
             'conversations' => $conversations,
@@ -95,8 +58,76 @@ class HomeController extends Controller
             'name' => $request->name,
         ]);
     }
-    public function dipaly(Request $request)
+    public function getMessages($conv_id)
     {
-        
+    
+        $textMessages = User::select(
+            'participants.part_id',
+            'participants.conv_id',
+            'participants.user_id',
+            'users.email',
+            'users.name',
+            'messages.msg_id',
+            'messages.is_read',
+            'messages.type',
+            'text_messages.text',
+            'text_messages.created_at',
+        )
+        ->join('participants', 'participants.user_id', '=' , 'users.id')
+        ->join('messages','messages.part_id', '=', 'participants.part_id')
+        ->join('text_messages','text_messages.msg_id' , '=' , 'messages.msg_id')
+        ->where('participants.conv_id', $conv_id)
+        ->orderBy('created_at')
+        ->get();
+        for($i = $textMessages->count() - 1; $i >= 0; $i--){
+            if($textMessages[$i]->is_read == 1){
+                break;
+            }
+
+            if($textMessages[$i]->email != Auth::user()->email)
+            {
+                
+                Message::where('msg_id', $textMessages[$i]->msg_id)
+                    ->update(['is_read'=> 1]);
+            }
+        }
+        $fileMessages = User::select(
+            'participants.part_id',
+            'participants.conv_id',
+            'participants.user_id',
+            'users.email',
+            'users.name',
+            'messages.msg_id',
+            'messages.is_read',
+            'messages.type',
+            'file_messages.path',
+            'file_messages.size',
+            'file_messages.created_at',
+        )
+        ->join('participants', 'participants.user_id', '=' , 'users.id')
+        ->join('messages','messages.part_id', '=', 'participants.part_id')
+        ->join('file_messages','file_messages.msg_id' , '=' , 'messages.msg_id')
+        ->where('participants.conv_id', $conv_id)
+        ->orderBy('created_at')
+        ->get();
+      
+        for($i = $fileMessages->count() - 1; $i >= 0; $i--){
+            if($fileMessages[$i]->is_read == 1){
+                break;
+            }
+
+            if($fileMessages[$i]->email != Auth::user()->email)
+            {
+                // $fileMessages[$i]->is_read = 1;
+                Message::where('msg_id', $fileMessages[$i]->msg_id)
+                    ->update(['is_read'=> 1]);
+            }
+        }
+        $messages = $textMessages->concat($fileMessages);
+        $messages = $messages->sortBy('created_at');
+        // dd($messages);
+        event( New ReadMessageEvent(Auth::user(),$conv_id));
+        session(['currentConversations' => $conv_id]);
+        return $messages;
     }
 }

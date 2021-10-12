@@ -17,16 +17,18 @@ class NewMessage extends Notification implements ShouldBroadcast
     public $message;
     public $conversation;
     public $user;
+    public $msgType;
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($user , $message,$conversation)
+    public function __construct($user , $message , $conversation , $msgType)
     {
         $this->message = $message;
         $this->conversation = $conversation;
         $this->user = $user;
+        $this->msgType = $msgType;
     }
 
         /**
@@ -41,6 +43,7 @@ class NewMessage extends Notification implements ShouldBroadcast
                 'user' => "$this->user",
                 'message' => "$this->message",
                 'conversation' => "$this->conversation",
+                'msgType' => "$this->msgType",
             ]);
     }
 

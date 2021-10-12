@@ -6,10 +6,17 @@
                 {{$firstLitter}}
             </div>
             <div class="relative mr-3 break-all text-sm bg-indigo-100 py-4 px-4 shadow rounded-xl">
-                <div>
-                    {{$message->text}}
-                </div>
-               
+                <form class="message relative">
+                        <input type="hidden" name='msg_id' value="{{$message->msg_id}}">
+                        <input type="hidden" name="type" value="{{$message->type}}">
+                        <input type="hidden" name="size" value="{{$message->size}}">
+                    @php
+                        $msg = $message->text ? $message->text : $message->path;
+                    @endphp
+                    <x-Message :type="$message->type" :message="$msg" :size="$message->size"/>
+                    
+                </form >
+
                     <div class="status absolute text-xs bottom-0 right-0 -mb-1 mr-2 text-gray-500">
                         @if ($message->is_read)
                         <div class='read'><svg  viewBox="0 0 30 30" width="20"f fill="#4338CA"  height="20" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd" clip-rule="evenodd"><path d="M24 6.278l-11.16 12.722-6.84-6 1.319-1.49 5.341 4.686 9.865-11.196 1.475 1.278zm-22.681 5.232l6.835 6.01-1.314 1.48-6.84-6 1.319-1.49zm9.278.218l5.921-6.728 1.482 1.285-5.921 6.756-1.482-1.313z"/></svg></div>

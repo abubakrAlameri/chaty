@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\chat;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Participant;
 use App\Models\Conversation;
 use Illuminate\Http\Request;
+use App\Notifications\NewMessage;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ConversationController extends Controller
 {
@@ -55,12 +58,20 @@ class ConversationController extends Controller
         Auth::user()->participant()->create([
             'conv_id' => $newConversation->id,
         ]);
-
-
+        if (Cache::get('is_active-' . $newFriend->id)) {
+            $message = Auth::user()->name . ' added you';
+            $newFriend->notify(new NewMessage(Auth::user(),$message, $newConversation->id ,'New Conversation'));
+        }
 
         return response()->json([
+            'user_id' => $newFriend->id,
+            'name' => $newFriend->name,
+            'conv_id'=> $newConversation->id,
+            'is_active' => Cache::get('is_active-' . $newFriend->id),
+            'last_seen' => Carbon::parse($newFriend->last_seen)->diffForHumans(),
             'message' => 'added successfully',
             'color' => 'text-green-600',
+            
         ]);
  
         

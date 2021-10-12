@@ -21,6 +21,7 @@ Route::middleware(['auth','verified'])->group(function () {
 
         Route::post("/send" , [MessageController::class , 'send'])
                 ->name('send.message');
+ 
 });
 
 

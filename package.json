@@ -18,5 +18,8 @@
         "postcss": "^8.3.6",
         "pusher-js": "^7.0.3",
         "tailwindcss": "^2.2.9"
+    },
+    "dependencies": {
+        "js-base64": "^3.7.2"
     }
 }

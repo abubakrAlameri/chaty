@@ -7,7 +7,7 @@
 
       <div  class="flex h-screen antialiased text-gray-800">
         <div id='contianer'  class="flex md:flex-row flex-col h-auto w-full overflow-x-hidden">
-            <div class='md:hidden cursor-pointer flex content-start items-center fixed top-0  bg-white w-full z-20  cursor-pointer mr-auto ' onclick='showSidbar()'>
+            <div id="humbargar" class='md:hidden cursor-pointer flex content-start items-center fixed top-0  bg-white w-full z-20  cursor-pointer mr-auto'>
                 @php
                 $currentConv = $conversations->firstWhere('conv_id',Session::get('currentConversations'))   
                 @endphp
@@ -48,7 +48,7 @@
                             {{Str::title(auth()->user()->name)}}
                         </p>
                     </div>
-                    <div class='cursor-pointer block md:hidden' onclick='hideSidbar()'> 
+                    <div id="close" class='cursor-pointer block md:hidden'> 
                         <svg  width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect y="33.234" width="47" height="4" rx="2" transform="rotate(-45 0 33.234)" fill="#4338CA" />
                             <rect x="2.82843" y="1.52588e-05" width="47" height="4" rx="2" transform="rotate(45 2.82843 1.52588e-05)"
@@ -83,7 +83,7 @@
                         <span class="font-bold">Active Conversations</span>
                         <span class="flex items-center justify-center bg-gray-300 h-4 w-4 rounded-full">{{$conversations->count()}}</span>
                     </div>
-                    <div class="flex flex-col space-y-1 mt-4 -mx-2  overflow-y-auto">
+                    <div id='conversations' class="flex flex-col space-y-1 mt-4 -mx-2  overflow-y-auto">
                         
                         @foreach ($conversations as $con)
                             <form action="{{route('home')}}" method="post" class="conversation w-full">
@@ -116,7 +116,7 @@
                                             </span>
                                     </div>
                                     
-                                    <div class="ml-2 text-sm font-semibold">{{Str::title($con->name)}}</div>
+                                    <div class="ml-2 text-sm font-semibold capitalize">{{$con->name}}</div>
 
                                     @if (Cache::get('is_active-' . $con->user_id))
                                         <div class="flex items-center 
@@ -152,9 +152,12 @@
                         <div class="min-h- overflow-x-hidden" style="min-height:  inherit">
                             <div id="chat" class=" grid grid-cols-12 gap-y-2">
 
+                              
+
                             @if (isset($messages) && $messages->count() > 0)
-                            <audio id="myAudio" class="video-js vjs-default-skin"></audio>
+                          
                                 @foreach ($messages as $message)
+                               
                                     @if ($message->email == auth()->user()->email)
                                         <x-SentMessage :message="$message"/>
                                     @else
@@ -178,8 +181,8 @@
                     <!--! start chat footer -->
                     <div class="@if($messages) block @else  hidden @endif h-auto relative  my-2 rounded-xl bg-white  p-2">
                         <div class="flex  min-h-0">
-                            <input id="imgUpload" type="file" onchange="sendImg(this);"  accept="image/gif, image/jpeg, image/png" name="" id="" class="invisible w-0">
-                            <button onclick="selectImg()" class="flex m-1 items-center justify-center text-gray-400 hover:text-gray-600">
+                            <input id="fileUpload" type="file" accept="image/*,video/*,audio/*, .pdf , .docx , .txt " name="" id="" class="opacity-0 w-0">
+                            <button id="selectFile"class="flex m-1 items-center justify-center text-gray-400 hover:text-gray-600">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -188,7 +191,7 @@
                                 </svg>
 
                             </button>
-                            <button id ="emojiButton" onclick="selectEmoji()" class="flex relative m-1 items-center justify-center text-gray-400 hover:text-gray-600">
+                            <button id ="emojiButton" class="flex relative m-1 items-center justify-center text-gray-400 hover:text-gray-600">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
@@ -210,7 +213,7 @@
                             
                                 </button>
                                 <!-- microphone -->
-                                <button onclick="recordAudio()"
+                                <button id="audioButton" 
                                     class="flex relative items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white m-1 px-3 py-3 flex-shrink-0">
                                     <svg class="w-4 h-4 " xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" 
                                         viewBox="0 0 350 350" xml:space="preserve">
@@ -244,8 +247,8 @@
                                     </div>
                                 </button>
 
-                                <!-- call -->
-                                <button onclick="calling('vo')"
+                                {{-- <!-- call -->
+                                <button id="callbutton" onclick="calling('vo')"
                                     class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white m-1 px-3 py-3 flex-shrink-0">
                                     
                                     
@@ -268,7 +271,7 @@
                                             d="M 15 25 C 10.048512 25 6 29.048512 6 34 L 6 66 C 6 70.951488 10.048512 75 15 75 L 65 75 C 69.951488 75 74 70.951488 74 66 L 74 61 L 77.3125 61 L 90.75 71.5625 A 2.0001999 2.0001999 0 0 0 94 70 L 94 30 A 2.0001999 2.0001999 0 0 0 91.9375 28 A 2.0001999 2.0001999 0 0 0 90.75 28.4375 L 77.3125 39 L 74 39 L 74 34 C 74 29.048512 69.951488 25 65 25 L 15 25 z M 15 29 L 65 29 C 67.804676 29 70 31.195324 70 34 L 70 40.84375 A 2.0002 2.0002 0 0 0 70 41 L 70 59 A 2.0002 2.0002 0 0 0 70 59.1875 L 70 66 C 70 68.804676 67.804676 71 65 71 L 15 71 C 12.195324 71 10 68.804676 10 66 L 10 34 C 10 31.195324 12.195324 29 15 29 z M 90 34.125 L 90 65.875 L 80 58.03125 L 80 41.96875 L 90 34.125 z M 29.875 36 A 2.0001998 2.0001998 0 0 0 28 38 L 28 50 L 28 62 A 2.0001998 2.0001998 0 0 0 31.03125 63.71875 L 41.03125 57.71875 L 51.03125 51.71875 A 2.0001998 2.0001998 0 0 0 51.03125 48.28125 L 41.03125 42.28125 L 31.03125 36.28125 A 2.0001998 2.0001998 0 0 0 29.875 36 z M 32 41.53125 L 38.96875 45.71875 L 46.09375 50 L 38.96875 54.28125 L 32 58.46875 L 32 50 L 32 41.53125 z M 74 43 L 76 43 L 76 57 L 74 57 L 74 43 z " />
                                     </svg>
                                     
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                         <div class='perss-enter-key' onKeypress='submitForm(e)'></div>
@@ -278,7 +281,7 @@
                                 <input type="hidden" id="currentConversation" name="currentConversation" value="{{session()->get('currentConversations')??0}}">
                                     <textarea dir="auto" name="message" id="inputText" type="text" style=' resize: none;'
                                         autocapitalize='sentences'
-                                        oninput="auto_grow(this)"
+                                     
                                         class="flex break-all w-full overflow-hidden p-2 border rounded-xl min-h-full focus:outline-none focus:border-indigo-300 pl-4 h-10" ></textarea>
                             
                             </div>
@@ -321,12 +324,12 @@
 
         </form>
     </div>
-<script src="//cdn.jsdelivr.net/npm/eruda"></script>
+{{-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
 <script>let el = document.createElement('div');
 document.body.appendChild(el);
 
 eruda.init({
     container: el,
     tool: ['console', 'elements']
-});</script>
+});</script> --}}
 @endsection

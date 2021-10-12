@@ -5,9 +5,17 @@
             {{ $firstLitter }}
         </div>
         <div class="relative ml-3 text-sm break-all bg-white py-4 px-4 shadow rounded-xl">
-            <div>
-                    {{$message->text}}
-            </div>
+             <form class="message relative">
+                    <input type="hidden" name='msg_id' value="{{$message->msg_id}}">
+                        <input type="hidden" name="type" value="{{$message->type}}">
+                        <input type="hidden" name="size" value="{{$message->size}}">
+                    @php
+                        $msg = $message->text ? $message->text : $message->path;
+                    @endphp
+                    <x-Message :type="$message->type" :message="$msg" :size="$message->size"/>
+                    
+                </form >
+
         </div>
     </div>
 </div>
