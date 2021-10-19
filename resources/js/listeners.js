@@ -34,7 +34,7 @@ addConv.addEventListener('submit', (e) => {
     let email = form.elements['email'].value;
     let data = new FormData();
     data.append('email', email);
-    form.elements['add-btn'].innerHTML = VIEW.spinner();
+    form.elements['add-btn'].innerHTML = `<div id='add-chat-spinner'></div>`;
     axios({
         method: 'POST',
         url: '/chats/add',

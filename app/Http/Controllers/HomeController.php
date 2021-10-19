@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 use DB;
 use App\Models\User;
 use App\Models\Message;
+use App\Models\FileMessage;
 use App\Models\Participant;
 use Illuminate\Http\Request;
-use App\Events\ReadMessageEvent;
 // use Illuminate\Support\Facades\DB;
+use App\Events\ReadMessageEvent;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -79,18 +80,8 @@ class HomeController extends Controller
         ->where('participants.conv_id', $conv_id)
         ->orderBy('created_at')
         ->get();
-        for($i = $textMessages->count() - 1; $i >= 0; $i--){
-            if($textMessages[$i]->is_read == 1){
-                break;
-            }
-
-            if($textMessages[$i]->email != Auth::user()->email)
-            {
-                
-                Message::where('msg_id', $textMessages[$i]->msg_id)
-                    ->update(['is_read'=> 1]);
-            }
-        }
+       
+        
         $fileMessages = User::select(
             'participants.part_id',
             'participants.conv_id',
@@ -110,22 +101,19 @@ class HomeController extends Controller
         ->where('participants.conv_id', $conv_id)
         ->orderBy('created_at')
         ->get();
-      
-        for($i = $fileMessages->count() - 1; $i >= 0; $i--){
-            if($fileMessages[$i]->is_read == 1){
-                break;
-            }
 
-            if($fileMessages[$i]->email != Auth::user()->email)
-            {
-                // $fileMessages[$i]->is_read = 1;
-                Message::where('msg_id', $fileMessages[$i]->msg_id)
-                    ->update(['is_read'=> 1]);
-            }
-        }
+
         $messages = $textMessages->concat($fileMessages);
         $messages = $messages->sortBy('created_at');
-        // dd($messages);
+        if($messages->count() > 0 ){
+            $msg = $messages->where('user_id' , '<>' , Auth::user()->id )->first();
+            $part_id = isset($msg->part_id) ? $msg->part_id : null;
+            // dd($messages);
+            // dd($part_id);
+            Message::where('part_id', $part_id)
+                ->where('is_read',0)
+                ->update(['is_read'=> 1]);
+        }
         event( New ReadMessageEvent(Auth::user(),$conv_id));
         session(['currentConversations' => $conv_id]);
         return $messages;

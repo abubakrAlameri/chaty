@@ -70,11 +70,16 @@
     }
 }
 
-/* 
-#spinner{
+
+#add-chat-spinner{
     position: relative;
-    left: -4px;
-    bottom: 7px;
+    /* background-color: black; */
+    left: 16px;
+    height: 16px;
+    width: 16px;
+    border-radius: 100%;
+    border-top: 2px solid #fff;
+    z-index: 10000;
     border-top-color:  rgb(99, 102, 241);
     animation: spinner 0.5s ease-out infinite;
 }
@@ -82,7 +87,7 @@
     to {
         transform: rotate(360deg);
     }
-} */
+} 
 .progress-circle {
   stroke-dasharray: 25;
   stroke-dashoffset: 25;
